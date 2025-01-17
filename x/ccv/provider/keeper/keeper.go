@@ -28,9 +28,9 @@ import (
 	"cosmossdk.io/log"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 
-	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
-	"github.com/cosmos/interchain-security/v5/x/ccv/provider/types"
-	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
+	consumertypes "github.com/maany-xyz/ics/v5/x/ccv/consumer/types"
+	"github.com/maany-xyz/ics/v5/x/ccv/provider/types"
+	ccv "github.com/maany-xyz/ics/v5/x/ccv/types"
 )
 
 // Keeper defines the Cross-Chain Validation Provider Keeper
@@ -805,7 +805,7 @@ func (k Keeper) DeleteValsetUpdateBlockHeight(ctx sdk.Context, valsetUpdateId ui
 // SetSlashAcks sets the slash acks under the given chain ID
 //
 // TODO: SlashAcks should be persisted as a list of ConsumerConsAddr types, not strings.
-// See https://github.com/cosmos/interchain-security/issues/728
+// See https://github.com/maany-xyz/ics/issues/728
 func (k Keeper) SetSlashAcks(ctx sdk.Context, chainID string, acks []string) {
 	store := ctx.KVStore(k.storeKey)
 
@@ -824,7 +824,7 @@ func (k Keeper) SetSlashAcks(ctx sdk.Context, chainID string, acks []string) {
 // GetSlashAcks returns the slash acks stored under the given chain ID
 //
 // TODO: SlashAcks should be persisted as a list of ConsumerConsAddr types, not strings.
-// See https://github.com/cosmos/interchain-security/issues/728
+// See https://github.com/maany-xyz/ics/issues/728
 func (k Keeper) GetSlashAcks(ctx sdk.Context, chainID string) []string {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.SlashAcksKey(chainID))
@@ -860,7 +860,7 @@ func (k Keeper) DeleteSlashAcks(ctx sdk.Context, chainID string) {
 
 // AppendSlashAck appends the given slash ack to the given chain ID slash acks in store
 func (k Keeper) AppendSlashAck(ctx sdk.Context, chainID,
-	ack string, // TODO: consumer cons addr should be accepted here, see https://github.com/cosmos/interchain-security/issues/728
+	ack string, // TODO: consumer cons addr should be accepted here, see https://github.com/maany-xyz/ics/issues/728
 ) {
 	acks := k.GetSlashAcks(ctx, chainID)
 	acks = append(acks, ack)

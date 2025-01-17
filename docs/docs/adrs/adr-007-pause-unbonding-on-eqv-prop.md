@@ -2,11 +2,13 @@
 sidebar_position: 2
 title: Pause validator unbonding during equivocation proposal
 ---
+
 # ADR 007: Pause validator unbonding during equivocation proposal
 
 ## Changelog
-* 2023-05-16: Initial Draft
-* 2023-11-30: Change the status to rejected
+
+- 2023-05-16: Initial Draft
+- 2023-11-30: Change the status to rejected
 
 ## Status
 
@@ -14,9 +16,9 @@ Rejected
 
 ## Context
 
-**Note:** ADR rejected as the equivocation proposal was removed by the 
-cryptographic verification of equivocation feature 
-(see [ADR-005](./adr-005-cryptographic-equivocation-verification.md) and 
+**Note:** ADR rejected as the equivocation proposal was removed by the
+cryptographic verification of equivocation feature
+(see [ADR-005](./adr-005-cryptographic-equivocation-verification.md) and
 [ADR-013](./adr-013-equivocation-slashing.md)).
 
 Currently, if an equivocation slashing proposal is created after more than one
@@ -32,6 +34,7 @@ proposal until the proposal's voting period is over.
 
 Pausing the unbonding period is already possible thanks to the changes in the
 `staking` module of the cosmos-sdk:
+
 - `stakingKeeper.PutUnbondingOnHold` pauses an unbonding period
 - `stakingKeeper.UnbondingCanComplete` unpauses an unbonding period
 
@@ -41,18 +44,19 @@ every time `PutUnbondingOnHold` is called, and decreased when
 fully unpaused when its underlying reference counter reaches 0. Therefore, as
 long as we safeguard consistency - i.e. we make sure we eventually decrement
 the reference counter for each time we have incremented it - we can safely use
-this existing mechanism without conflicts with the *Completion of Unbonding
-Operations* system.
+this existing mechanism without conflicts with the _Completion of Unbonding
+Operations_ system.
 
 ### When pause
 
 The unbonding period (if there is any unbonding) should be paused once an
 equivocation proposal enters the voting period. For that, the `gov` module's
-hook `AfterProposalDeposit` can be used. 
+hook `AfterProposalDeposit` can be used.
 
 If the hook is triggered with a an equivocation proposal in voting period, then
 for each equivocation of the proposal, the unbonding operations of the related
 validator that were initiated after the equivocation block time must be paused
+
 - i.e. the underlying reference counter has to be increased.
 
 Note that even after the voting period has started, a proposal can receive
@@ -95,5 +99,5 @@ reference counter - regardless of the proposal outcome.
 
 ## References
 
-* https://github.com/cosmos/interchain-security/issues/747
-* https://github.com/cosmos/interchain-security/pull/791
+- https://github.com/maany-xyz/ics/issues/747
+- https://github.com/maany-xyz/ics/pull/791

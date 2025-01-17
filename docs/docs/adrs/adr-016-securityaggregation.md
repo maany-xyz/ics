@@ -2,11 +2,12 @@
 sidebar_position: 17
 title: Security aggregation
 ---
+
 # ADR 016: Security aggregation
 
 ## Changelog
 
--  2024-04-24: Initial draft of ADR
+- 2024-04-24: Initial draft of ADR
 
 ## Status
 
@@ -20,7 +21,7 @@ Security Aggregation consists of the following parts:
 
 - A mechanism for delegating external tokens to Cosmos validators, such as Babylon or EigenLayer AVS contract.
 - An oracle that tracks how much external stake has been delegated to each Cosmos validator and provides price feeds for external tokens.
-- Power mixing:  a mechanism to combine external and native stake to derive the power of each validator.
+- Power mixing: a mechanism to combine external and native stake to derive the power of each validator.
 - A reward distribution protocol that enables sending back rewards to the external source.
 
 External staking information is received from an oracle together with price information of related stakes.
@@ -31,6 +32,7 @@ This ADR describes the _Cosmos modules_ of the solution.
 ## Alternative Approaches
 
 ### Rewards
+
 As an alternative to sending rewards back to the external chains, stakers could be rewarded on the Cosmos chain.
 This would require a mapping of external addresses to addresses on Cosmos chain for each staker on external source.
 In addition detailed external staking information such as staking addresses, amount of stakes per staker and validator, etc. have to be provided by the oracle.
@@ -38,7 +40,9 @@ In addition detailed external staking information such as staking addresses, amo
 ## Decision
 
 ### Rewards will be sent back to external chains instead of paying rewards for external stakers on Cosmos chain
+
 Rewards will be sent back to external chains instead of paying rewards for external stakers on Cosmos chain
+
 - due to amount of additional staking information to be sent and tracked by the oracle
 - due to the additional complexity of managing external and Cosmos addresses
 
@@ -64,11 +68,13 @@ Requirements:
 - set of validator stakes from oracle always have the current price, full set of validators, and current stakes
 
 The `Power Mixing` implementation
+
 - queries current validators and their powers from [x/staking](https://github.com/cosmos/cosmos-sdk/blob/a6f3fbfbeb7ea94bda6369a7163a523e118a123c/x/staking/types/staking.pb.go#L415)
-and from oracle (see below).
+  and from oracle (see below).
 - calculates power updates by mixing power values of external and internal sources
-Following pseudocode snippet shows a possible implementation of how power mixing
-feature works.
+  Following pseudocode snippet shows a possible implementation of how power mixing
+  feature works.
+
 ```golang
 // PowerSource is an abstract entity providing validator powers which
 // are used by the mixer. This can be an oracle, staking module or an
@@ -96,19 +102,20 @@ func (k *keeper) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Valida
 ```
 
 #### Integration with `ICS provider`
+
 The provider module updates the validator set on CometBFT instead of the SDK staking module (x/staking). The provider implementation will intervene in this behavior and ensure that the validator updates are taken from the `Power Mixing` feature.
 
 External power sources are managed by the provider module. Only registered power sources can provide input to the `Power Mixing` feature.
 Power sources will be assigned a unique identifier which will be used by the oracle, provider module and the power mixing and rewarding feature.
 
 Updates with the next validator set are sent to consumer chains on each epoch (see `EndBlockVSU()`).
-When collecting the validator updates for each consumer chain (see [`QueueVSCPackets()`](https://pkg.go.dev/github.com/cosmos/interchain-security/v4/x/ccv/provider/keeper#Keeper.QueueVSCPackets)), the validator powers of the bonded validators will be updated with the validator powers from the external sources using the `Power Mixing` module.
+When collecting the validator updates for each consumer chain (see [`QueueVSCPackets()`](https://pkg.go.dev/github.com/maany-xyz/ics/v4/x/ccv/provider/keeper#Keeper.QueueVSCPackets)), the validator powers of the bonded validators will be updated with the validator powers from the external sources using the `Power Mixing` module.
 These updates are sent as part of the VSC packets to all registered consumer chains.
 
 #### Integration with `ICS consumer`
+
 Consumer chains receive validator updates as part of VSC packets from the provider.
 These packets contain validator powers which were already mixed with external staked powers.
-
 
 ### Queries
 
@@ -130,7 +137,6 @@ message PowerMixedValUpdateResponse {
   repeated abci.ValidatorUpdate val_set
 }
 ```
-
 
 The following queries will be provided by the oracle
 
@@ -185,16 +191,19 @@ Note: currently there's no support paying rewards on EigenLayer (see [here](http
 
 ### Positive
 
-* Allow external depositors to stake their tokens to secure a Cosmos chain
+- Allow external depositors to stake their tokens to secure a Cosmos chain
 
 ### Negative
-* Dependency to external sources e.g (price feeds) for validator power calculation
-* Security impact
+
+- Dependency to external sources e.g (price feeds) for validator power calculation
+- Security impact
 
 ### Neutral
-* Additional complexity for staking
+
+- Additional complexity for staking
 
 ## Questions:
+
 - Slashing: subject of this ADR? (Defined but [not activated](https://www.coindesk.com/tech/2024/04/10/eigenlayer-cryptos-biggest-project-launch-this-year-is-still-missing-crucial-functionality/) currently on EigenLayer).
 
 ## References

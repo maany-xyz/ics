@@ -7,8 +7,8 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
-	"github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
-	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
+	"github.com/maany-xyz/ics/v5/x/ccv/consumer/types"
+	ccv "github.com/maany-xyz/ics/v5/x/ccv/types"
 )
 
 // InitGenesis initializes the CCV consumer state and binds to PortID.
@@ -33,7 +33,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state *types.GenesisState) []abci.V
 
 	k.SetParams(ctx, state.Params)
 	// TODO: Remove enabled flag and find a better way to setup integration tests
-	// See: https://github.com/cosmos/interchain-security/issues/339
+	// See: https://github.com/maany-xyz/ics/issues/339
 	if !state.Params.Enabled {
 		return nil
 	}

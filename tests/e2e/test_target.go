@@ -89,10 +89,10 @@ func (dc *DockerContainer) Build() error {
 
 	// For some version combinations the latest 'genesis transformer' does not support the required transformation
 	// transformation function of the client of the consumer version needs to be used and not the latest
-	transformerImage := "ghcr.io/cosmos/interchain-security:latest"
+	transformerImage := "ghcr.io/maany-xyz/ics:latest"
 	if semver.IsValid(consumerVersion) && semver.IsValid(providerVersion) &&
 		semver.Compare(consumerVersion, "v3.3.0") <= 0 && semver.Compare(providerVersion, "v3.3.0") < 0 {
-		transformerImage = "ghcr.io/cosmos/interchain-security:v3.3.0"
+		transformerImage = "ghcr.io/maany-xyz/ics:v3.3.0"
 	}
 
 	fmt.Println("Transformer used:", transformerImage)

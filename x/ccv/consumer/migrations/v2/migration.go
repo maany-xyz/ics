@@ -6,12 +6,12 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
-	ccvtypes "github.com/cosmos/interchain-security/v5/x/ccv/types"
+	consumertypes "github.com/maany-xyz/ics/v5/x/ccv/consumer/types"
+	ccvtypes "github.com/maany-xyz/ics/v5/x/ccv/types"
 )
 
 // MigrateConsumerPacketData migrates consumer packet data according to
-// https://github.com/cosmos/interchain-security/pull/1037
+// https://github.com/maany-xyz/ics/pull/1037
 //
 // Note: an equivalent migration is not required for providers.
 func MigrateConsumerPacketData(ctx sdk.Context, store storetypes.KVStore) error {

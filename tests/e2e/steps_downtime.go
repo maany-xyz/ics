@@ -57,7 +57,7 @@ func stepsDowntime(consumerName string) []Step {
 					ValPowers: &map[ValidatorID]uint{
 						ValidatorID("alice"): 910,
 						// Bob's stake may or may not be slashed at this point depending on comet vs cometmock
-						// See https://github.com/cosmos/interchain-security/issues/1304
+						// See https://github.com/maany-xyz/ics/issues/1304
 						ValidatorID("carol"): 100,
 					},
 				},
@@ -267,7 +267,7 @@ func stepsDoubleDowntime(consumerName string) []Step {
 					ValPowers: &map[ValidatorID]uint{
 						ValidatorID("alice"): 910,
 						// Bob's stake may or may not be slashed at this point depending on comet vs cometmock
-						// See https://github.com/cosmos/interchain-security/issues/1304
+						// See https://github.com/maany-xyz/ics/issues/1304
 						ValidatorID("carol"): 100,
 					},
 				},
@@ -380,7 +380,7 @@ func stepsDoubleDowntime(consumerName string) []Step {
 					ValPowers: &map[ValidatorID]uint{
 						ValidatorID("alice"): 910,
 						// Bob's stake may or may not be slashed at this point depending on comet vs cometmock
-						// See https://github.com/cosmos/interchain-security/issues/1304
+						// See https://github.com/maany-xyz/ics/issues/1304
 						ValidatorID("carol"): 100,
 					},
 				},

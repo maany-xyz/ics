@@ -5,7 +5,7 @@ import (
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 
-	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	consumertypes "github.com/maany-xyz/ics/v5/x/ccv/consumer/types"
 )
 
 //

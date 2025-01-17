@@ -1,6 +1,7 @@
 ---
 sidebar_position: 1
 ---
+
 # Developing an ICS consumer chain
 
 When developing an ICS consumer chain, besides just focusing on your chain's logic you should aim to allocate time to ensure that your chain is compatible with the ICS protocol.
@@ -8,7 +9,7 @@ To help you on your journey, the ICS team has provided multiple examples of a mi
 
 ## Basic consumer chain
 
-The source code for the example app can be found [here](https://github.com/cosmos/interchain-security/tree/main/app/consumer).
+The source code for the example app can be found [here](https://github.com/maany-xyz/ics/tree/main/app/consumer).
 
 Please note that consumer chains do not implement the staking module - part of the validator set of the provider is replicated over to the consumer,
 meaning that the consumer uses a subset of provider validator set and the stake of the validators on the provider determines their stake on the consumer.
@@ -20,7 +21,7 @@ You should not need to manage or override any code from the `x/consumer` module.
 
 ## Democracy consumer chain
 
-The source code for the example app can be found [here](https://github.com/cosmos/interchain-security/tree/main/app/consumer-democracy).
+The source code for the example app can be found [here](https://github.com/maany-xyz/ics/tree/main/app/consumer-democracy).
 
 This type of consumer chain wraps the basic CosmosSDK `x/distribution`, `x/staking` and `x/governance` modules allowing the consumer chain to perform democratic actions such as participating and voting within the chain's governance system.
 
@@ -31,4 +32,3 @@ With these modules enabled, the consumer chain can mint its own governance token
 ## Standalone chain to consumer chain changeover
 
 See the [standalone chain to consumer chain changeover guide](./changeover-procedure.md) for more information on how to transition your standalone chain to a consumer chain.
-

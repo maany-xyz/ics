@@ -8,8 +8,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	cryptoutil "github.com/cosmos/interchain-security/v5/testutil/crypto"
-	providertypes "github.com/cosmos/interchain-security/v5/x/ccv/provider/types"
+	cryptoutil "github.com/maany-xyz/ics/v5/testutil/crypto"
+	providertypes "github.com/maany-xyz/ics/v5/x/ccv/provider/types"
 )
 
 // Tests that all singular keys, or prefixes to fully resolves keys are non duplicate byte values.

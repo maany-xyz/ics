@@ -15,9 +15,9 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 
-	"github.com/cosmos/interchain-security/v5/x/ccv/provider/keeper"
-	providertypes "github.com/cosmos/interchain-security/v5/x/ccv/provider/types"
-	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
+	"github.com/maany-xyz/ics/v5/x/ccv/provider/keeper"
+	providertypes "github.com/maany-xyz/ics/v5/x/ccv/provider/types"
+	ccv "github.com/maany-xyz/ics/v5/x/ccv/types"
 )
 
 // OnChanOpenInit implements the IBCModule interface

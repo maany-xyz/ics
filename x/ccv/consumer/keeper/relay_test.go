@@ -21,11 +21,11 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/libs/bytes"
 
-	"github.com/cosmos/interchain-security/v5/testutil/crypto"
-	testkeeper "github.com/cosmos/interchain-security/v5/testutil/keeper"
-	consumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
-	consumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
-	"github.com/cosmos/interchain-security/v5/x/ccv/types"
+	"github.com/maany-xyz/ics/v5/testutil/crypto"
+	testkeeper "github.com/maany-xyz/ics/v5/testutil/keeper"
+	consumerkeeper "github.com/maany-xyz/ics/v5/x/ccv/consumer/keeper"
+	consumertypes "github.com/maany-xyz/ics/v5/x/ccv/consumer/types"
+	"github.com/maany-xyz/ics/v5/x/ccv/types"
 )
 
 // TestOnRecvVSCPacket tests the behavior of OnRecvVSCPacket over various packet scenarios
@@ -498,7 +498,7 @@ func setupSlashBeforeVscMatured(ctx sdk.Context, k *consumerkeeper.Keeper) {
 	})
 }
 
-// Regression test for https://github.com/cosmos/interchain-security/issues/1145
+// Regression test for https://github.com/maany-xyz/ics/issues/1145
 func TestSendPacketsDeletion(t *testing.T) {
 	// Keeper setup
 	consumerKeeper, ctx, ctrl, mocks := testkeeper.GetConsumerKeeperAndCtx(t, testkeeper.NewInMemKeeperParams(t))

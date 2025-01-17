@@ -15,9 +15,9 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmtypes "github.com/cometbft/cometbft/types"
 
-	"github.com/cosmos/interchain-security/v5/testutil/crypto"
-	"github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
-	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
+	"github.com/maany-xyz/ics/v5/testutil/crypto"
+	"github.com/maany-xyz/ics/v5/x/ccv/consumer/types"
+	ccv "github.com/maany-xyz/ics/v5/x/ccv/types"
 )
 
 const (

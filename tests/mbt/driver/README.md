@@ -6,9 +6,11 @@ library to simulate the network.
 This means that we can test the implementation of the app without needing to worry about consensus, relayers, etc.
 
 ## How to run
+
 ### Generating traces
 
 To generate traces, run
+
 ```
 ./generate_traces.sh
 ```
@@ -16,16 +18,16 @@ To generate traces, run
 This will generate several "families" of traces in the `traces` folder.
 
 Here is what one of the lines from `./generate_traces.sh` looks like:
+
 ```
 go run ./... -modelPath=../model/ccv_boundeddrift.qnt -step stepBoundedDrift  -invariant CanTimeoutConsumer -traceFolder traces/bound_timeout -numTraces 10 -numSteps 200 -numSamples 200
 ```
 
-One very useful concept is the given `-invariant`. This is a property written in Quint which the trace generator tries to *violate*.
+One very useful concept is the given `-invariant`. This is a property written in Quint which the trace generator tries to _violate_.
 For example, the invariant `CanTimeoutConsumer` is a property that says "No consumer can ever time out".
-If we *violate* the property, we thus find a trace where we *can* time out a consumer.
+If we _violate_ the property, we thus find a trace where we _can_ time out a consumer.
 The "sanity checks" from the model make for great invariants to target here, since they
 are properties that essentially specify interesting behaviour.
-
 
 You may adjust the `numTraces`, `numSteps`, and `numSamples` parameters to generate more or fewer traces,
 with more or fewer steps. `numSamples` is only important when you want to generate traces that find a violation
@@ -38,21 +40,20 @@ As a rule of thumb to know how many traces to generate, assume generating a trac
 
 By default, I chose to generate 5 different "families" of traces:
 
-* Bounded Drift Traces with Timeouts (`bound_timeout`): This trace family is generated to test the behavior of the system when a consumer times out. It aims to generate traces that reach an interesting state where a consumer has timed out.
+- Bounded Drift Traces with Timeouts (`bound_timeout`): This trace family is generated to test the behavior of the system when a consumer times out. It aims to generate traces that reach an interesting state where a consumer has timed out.
 
-* Long Bounded Drift Traces without Invariants (`bound_noinv`): This trace family focuses on generating longer traces without specific invariants. It can be useful for exploring the behavior of the system over an extended period of time.
+- Long Bounded Drift Traces without Invariants (`bound_noinv`): This trace family focuses on generating longer traces without specific invariants. It can be useful for exploring the behavior of the system over an extended period of time.
 
-* Bounded Drift Traces with Maturations (`bound_mat`): This trace family is designed to test the behavior of the system when VSCMaturedPackets are received on the provider.
+- Bounded Drift Traces with Maturations (`bound_mat`): This trace family is designed to test the behavior of the system when VSCMaturedPackets are received on the provider.
 
-* Synced Traces with Maturations (`sync_mat`): This trace family is designed to test the behavior of the system when VSCMaturedPackets are received on the provider. It is similar to the Bounded Drift Traces with Maturations family, but it generates traces where the chains are synchronized.
+- Synced Traces with Maturations (`sync_mat`): This trace family is designed to test the behavior of the system when VSCMaturedPackets are received on the provider. It is similar to the Bounded Drift Traces with Maturations family, but it generates traces where the chains are synchronized.
 
-* Long Synced Traces without Invariants (`sync_noinv`): This trace family generates longer traces without specific invariants for synchronized behavior. It is similar to the Long Bounded Drift Traces without Invariants family, but it generates traces where the chains are synchronized.
-
+- Long Synced Traces without Invariants (`sync_noinv`): This trace family generates longer traces without specific invariants for synchronized behavior. It is similar to the Long Bounded Drift Traces without Invariants family, but it generates traces where the chains are synchronized.
 
 ### Running against traces
 
 Once you have populated the `traces` folder with traces, you can run the traces against the actual implementation
-by running 
+by running
 
 ```
 go test -v -timeout 30m
@@ -76,12 +77,13 @@ The driver is responsible for comparing the state of the model and the implement
 This is done by comparing the state of the model and the implementation after each step of the trace.
 
 Right now, it compares the following parts of the state:
-* It checks that the consumer chains that are considered running by the provider in the system are the same as the consumers running in the model.
-* It checks that the actual timestamps of all running chains match the timestamps in the model (to a second precision, see Limitations).
-* It checks that the validator sets of all running chains match the validator sets in the model.
-* It checks that the packet queues where both receiver and sender are running match those packet queues in the model.
-It ensures the timeout timestamps of packets match, but does not check any further packet data.
-* It checks that the VSCSendTimestamps on the provider match the ones from the model.
+
+- It checks that the consumer chains that are considered running by the provider in the system are the same as the consumers running in the model.
+- It checks that the actual timestamps of all running chains match the timestamps in the model (to a second precision, see Limitations).
+- It checks that the validator sets of all running chains match the validator sets in the model.
+- It checks that the packet queues where both receiver and sender are running match those packet queues in the model.
+  It ensures the timeout timestamps of packets match, but does not check any further packet data.
+- It checks that the VSCSendTimestamps on the provider match the ones from the model.
 
 ## Statistics
 
@@ -89,6 +91,7 @@ The driver also produces some statistics about the traces it runs.
 These are relatively minimal at the moment, but can be extended as needed.
 
 Right now, the statistics look, for example, like this, printed after running the traces:
+
 ```
 499 traces run
 Highest observed voting power: 800
@@ -103,16 +106,18 @@ Average summed block time delta passed per trace: 876h46m29.361303503s
 ```
 
 Some notes are:
-* We count a timeout when a consumer times out either due to the VSCTimeout, or when we attempt to deliver a packet sent from/to the consumer to a chain where its timeout timestamp has passed (and thus the channel would be closed).
-* Started chains - stopped chains - timeouts is not 0, because we often just leave chains running until the end of the trace, in which case they are neither stopped nor timed out.
-* The average summed block time delta passed per trace is the total time passed in all trace (as measured by the sum of time increments we have performed) divided by the number of traces.
-* The number of transactions is how many VotingPowerChanges we have seen in total.
+
+- We count a timeout when a consumer times out either due to the VSCTimeout, or when we attempt to deliver a packet sent from/to the consumer to a chain where its timeout timestamp has passed (and thus the channel would be closed).
+- Started chains - stopped chains - timeouts is not 0, because we often just leave chains running until the end of the trace, in which case they are neither stopped nor timed out.
+- The average summed block time delta passed per trace is the total time passed in all trace (as measured by the sum of time increments we have performed) divided by the number of traces.
+- The number of transactions is how many VotingPowerChanges we have seen in total.
 
 ## Limitations
 
 The driver has some limitations and quirks that are documented here.
 
 #### One Block in the model is not one block in the implementation
+
 In the model, we assume that when a consumer chain is started,
 it takes just 1 block to get it connected to the provider, i.e. everything happens in the same block.
 In reality, an IBC connection takes several blocks to be established.
@@ -137,5 +142,5 @@ but as long as we produce only a few thousand blocks per trace, this should not 
 #### Slash Throttling
 
 Currently, slash throttling is implemented assuming an infinite slash meter.
-See https://github.com/cosmos/interchain-security/blob/main/docs/docs/adrs/adr-002-throttle.md and https://github.com/cosmos/interchain-security/blob/main/docs/docs/adrs/adr-008-throttle-retries.md
+See https://github.com/maany-xyz/ics/blob/main/docs/docs/adrs/adr-002-throttle.md and https://github.com/maany-xyz/ics/blob/main/docs/docs/adrs/adr-008-throttle-retries.md
 for more information on slash throttling.

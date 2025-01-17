@@ -93,11 +93,11 @@ import (
 	tmos "github.com/cometbft/cometbft/libs/os"
 	dbm "github.com/cosmos/cosmos-db"
 
-	appencoding "github.com/cosmos/interchain-security/v5/app/encoding"
-	testutil "github.com/cosmos/interchain-security/v5/testutil/integration"
-	ibcconsumer "github.com/cosmos/interchain-security/v5/x/ccv/consumer"
-	ibcconsumerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/consumer/keeper"
-	ibcconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	appencoding "github.com/maany-xyz/ics/v5/app/encoding"
+	testutil "github.com/maany-xyz/ics/v5/testutil/integration"
+	ibcconsumer "github.com/maany-xyz/ics/v5/x/ccv/consumer"
+	ibcconsumerkeeper "github.com/maany-xyz/ics/v5/x/ccv/consumer/keeper"
+	ibcconsumertypes "github.com/maany-xyz/ics/v5/x/ccv/consumer/types"
 )
 
 const (

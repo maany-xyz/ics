@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package interchain_security.ccv.v1;
 
-option go_package = "github.com/cosmos/interchain-security/v5/x/ccv/types";
+option go_package = "github.com/maany-xyz/ics/v5/x/ccv/types";
 
 import "tendermint/abci/types.proto";
 import "ibc/lightclients/tendermint/v1/tendermint.proto";
@@ -23,7 +23,7 @@ import "gogoproto/gogo.proto";
 //
 message ConsumerParams {
     // TODO: Remove enabled flag and find a better way to setup integration tests
-    // See: https://github.com/cosmos/interchain-security/issues/339
+    // See: https://github.com/maany-xyz/ics/issues/339
     bool enabled = 1;
 
     ///////////////////////

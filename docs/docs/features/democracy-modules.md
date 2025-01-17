@@ -10,7 +10,7 @@ The democracy modules comprise `x/staking`, `x/distribution` and `x/governance` 
 
 The modules are plug-and-play and only require small wiring changes to be enabled.
 
-For a full integration check the `consumer-democracy` [example app](https://github.com/cosmos/interchain-security/blob/main/app/consumer-democracy/app.go).
+For a full integration check the `consumer-democracy` [example app](https://github.com/maany-xyz/ics/blob/main/app/consumer-democracy/app.go).
 
 ## Staking
 
@@ -113,7 +113,7 @@ You **do not need to remove** the cosmos-sdk `StakingKeeper` from your wiring.
 ```diff
 import (
     ...
-+   ccvstaking "github.com/cosmos/interchain-security/v4/x/ccv/democracy/staking"
++   ccvstaking "github.com/maany-xyz/ics/v4/x/ccv/democracy/staking"
 )
 
 var (
@@ -361,9 +361,9 @@ package app
 import (
 	...
 
-+	democracyante "github.com/cosmos/interchain-security/v4/app/consumer-democracy/ante"
-+	consumerante "github.com/cosmos/interchain-security/v4/app/consumer/ante"
-+	icsconsumerkeeper "github.com/cosmos/interchain-security/v4/x/ccv/consumer/keeper"
++	democracyante "github.com/maany-xyz/ics/v4/app/consumer-democracy/ante"
++	consumerante "github.com/maany-xyz/ics/v4/app/consumer/ante"
++	icsconsumerkeeper "github.com/maany-xyz/ics/v4/x/ccv/consumer/keeper"
 )
 
 type HandlerOptions struct {
@@ -400,7 +400,7 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govv1beta1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 
-+	ccvgov "github.com/cosmos/interchain-security/v4/x/ccv/democracy/governance"
++	ccvgov "github.com/maany-xyz/ics/v4/x/ccv/democracy/governance"
 )
 
 var (
@@ -482,7 +482,7 @@ import (
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
     sdkdistr "github.com/cosmos/cosmos-sdk/x/distribution"
 
-+   ccvdistr "github.com/cosmos/interchain-security/v4/x/ccv/democracy/distribution"
++   ccvdistr "github.com/maany-xyz/ics/v4/x/ccv/democracy/distribution"
 )
 
 var (

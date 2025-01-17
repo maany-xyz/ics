@@ -18,13 +18,13 @@ Interchain Security (ICS) follows [semantic versioning](https://semver.org), but
 
 ### Breaking Changes
 
-A change is considered to be ***library API breaking*** if it modifies the integration of ICS on either consumer or provider chains (i.e., it changes the way ICS is used as a library).
+A change is considered to be **_library API breaking_** if it modifies the integration of ICS on either consumer or provider chains (i.e., it changes the way ICS is used as a library).
 Note that bumping the major version of [Cosmos SDK](https://github.com/cosmos/cosmos-sdk) or [IBC](https://github.com/cosmos/ibc-go) will be considered as a library API breaking change.
 
-A change is considered to be ***state-machine breaking*** if it requires a coordinated upgrade and/or state migration for either consumer or provider chains in order to preserve [state compatibility](./STATE-COMPATIBILITY.md).
+A change is considered to be **_state-machine breaking_** if it requires a coordinated upgrade and/or state migration for either consumer or provider chains in order to preserve [state compatibility](./STATE-COMPATIBILITY.md).
 Note that when bumping the dependencies of [Cosmos SDK](https://github.com/cosmos/cosmos-sdk) and [IBC](https://github.com/cosmos/ibc-go) we will only treat patch releases as non state-machine breaking.
 
-A change is considered to be ***node API breaking*** if it modifies the API provided by a node of either consumer or provider chains.
+A change is considered to be **_node API breaking_** if it modifies the API provided by a node of either consumer or provider chains.
 This includes events, queries, CLI interfaces.
 
 ## Release Cycle
@@ -32,7 +32,7 @@ This includes events, queries, CLI interfaces.
 ICS follows a traditional release cycle involving release candidates (RCs) releases before finalizing a new version.
 The stable release guarantees do not go into effect until a final release is performed.
 
-❗***It is never advisable to use a non-final release in production.***
+❗**_It is never advisable to use a non-final release in production._**
 
 Final releases should contain little to no changes in comparison to the latest RC.
 
@@ -56,12 +56,12 @@ The date when a major release series reaches end of life is determined by one of
 Only the following major release series have a stable release status.
 All missing minor release versions have been discontinued.
 
-| Release | End of Life Date |
-|---------|------------------|
-| `v3.2.x` | July 10, 2024 |
+| Release  | End of Life Date |
+| -------- | ---------------- |
+| `v3.2.x` | July 10, 2024    |
 | `v4.0.x` | January 24, 2025 |
 | `v4.2.x` | January 24, 2025 |
-| `v5.0.x` | May 9, 2025 |
+| `v5.0.x` | May 9, 2025      |
 
 **Note**: As of [Gaia v17.2.0](https://github.com/cosmos/gaia/releases/tag/v17.2.0),
 the Cosmos Hub uses a fork of Cosmos SDK ([v0.47.15-ics-lsm](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.47.15-ics-lsm))
@@ -74,13 +74,13 @@ As soon as the Cosmos Hub uses mainline Cosmos SDK, the `-lsm` releases will rea
 
 Versions of Golang, IBC, Cosmos SDK and CometBFT used by ICS in the currently active releases:
 
-| ICS | Golang | IBC | Cosmos SDK | CometBFT | Note |
-|-----|--------|-----|------------|----------|------|
-| [v3.2.0](https://github.com/cosmos/interchain-security/releases/tag/v3.2.0) | 1.20 | v7.3.0 | v0.47.5 | v0.37.2 |
-| [v4.0.0](https://github.com/cosmos/interchain-security/releases/tag/v4.0.0) | 1.21 | v7.3.1 | v0.47.7 | v0.37.4 | Provider on >= v4.0.0 backwards compatible with consumers >= v3.2.0 |
-| [v4.2.0](https://github.com/cosmos/interchain-security/releases/tag/v4.2.0) | 1.21 | v7.4.0 | v0.47.11 | v0.37.6 |
-| [v4.2.0-lsm](https://github.com/cosmos/interchain-security/releases/tag/v4.2.0-lsm) | 1.21 | v7.4.0 | v0.47.13-ics-lsm | v0.37.6 | Provider only (Cosmos Hub specific) |
-| [v5.0.0](https://github.com/cosmos/interchain-security/releases/tag/v5.0.0) | 1.21 | v8.1.0 | v0.50.4 | v0.38.5 |
+| ICS                                                                    | Golang | IBC    | Cosmos SDK       | CometBFT | Note                                                                |
+| ---------------------------------------------------------------------- | ------ | ------ | ---------------- | -------- | ------------------------------------------------------------------- |
+| [v3.2.0](https://github.com/maany-xyz/ics/releases/tag/v3.2.0)         | 1.20   | v7.3.0 | v0.47.5          | v0.37.2  |
+| [v4.0.0](https://github.com/maany-xyz/ics/releases/tag/v4.0.0)         | 1.21   | v7.3.1 | v0.47.7          | v0.37.4  | Provider on >= v4.0.0 backwards compatible with consumers >= v3.2.0 |
+| [v4.2.0](https://github.com/maany-xyz/ics/releases/tag/v4.2.0)         | 1.21   | v7.4.0 | v0.47.11         | v0.37.6  |
+| [v4.2.0-lsm](https://github.com/maany-xyz/ics/releases/tag/v4.2.0-lsm) | 1.21   | v7.4.0 | v0.47.13-ics-lsm | v0.37.6  | Provider only (Cosmos Hub specific)                                 |
+| [v5.0.0](https://github.com/maany-xyz/ics/releases/tag/v5.0.0)         | 1.21   | v8.1.0 | v0.50.4          | v0.38.5  |
 
 **Note:** For a list of major ICS features available in the currently active releases, see [FEATURES.md](./FEATURES.md).
 
@@ -90,9 +90,9 @@ A MAJOR version of ICS will always be backwards compatible with the previous MAJ
 
 The following table indicates the compatibility of currently active releases:
 
-| Consumer | Provider |  `v4.2.0-lsm` |
-|----------|----------|--------------|
-| `v3.2.0` || ✅ |
-| `v4.0.0` || ✅ |
-| `v4.2.0` || ✅ |
-| `v5.0.0` || ✅ |
+| Consumer | Provider | `v4.2.0-lsm` |
+| -------- | -------- | ------------ |
+| `v3.2.0` |          | ✅           |
+| `v4.0.0` |          | ✅           |
+| `v4.2.0` |          | ✅           |
+| `v5.0.0` |          | ✅           |

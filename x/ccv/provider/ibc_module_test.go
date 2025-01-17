@@ -15,11 +15,11 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 
-	testkeeper "github.com/cosmos/interchain-security/v5/testutil/keeper"
-	"github.com/cosmos/interchain-security/v5/x/ccv/provider"
-	providerkeeper "github.com/cosmos/interchain-security/v5/x/ccv/provider/keeper"
-	providertypes "github.com/cosmos/interchain-security/v5/x/ccv/provider/types"
-	ccv "github.com/cosmos/interchain-security/v5/x/ccv/types"
+	testkeeper "github.com/maany-xyz/ics/v5/testutil/keeper"
+	"github.com/maany-xyz/ics/v5/x/ccv/provider"
+	providerkeeper "github.com/maany-xyz/ics/v5/x/ccv/provider/keeper"
+	providertypes "github.com/maany-xyz/ics/v5/x/ccv/provider/types"
+	ccv "github.com/maany-xyz/ics/v5/x/ccv/types"
 )
 
 // TestOnChanOpenInit tests the provider's OnChanOpenInit method against spec.
@@ -209,7 +209,7 @@ func TestOnChanOpenAck(t *testing.T) {
 // Spec tag: [CCV-PCF-COCONFIRM.1]
 //
 // TODO: Validate spec requirement that duplicate channels attempting to become canonical CCV channel are closed.
-// See: https://github.com/cosmos/interchain-security/issues/327
+// See: https://github.com/maany-xyz/ics/issues/327
 func TestOnChanOpenConfirm(t *testing.T) {
 	testCases := []struct {
 		name                string

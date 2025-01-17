@@ -6,8 +6,9 @@ title: Key Assignment
 # ADR 001: Key Assignment
 
 ## Changelog
-* 2022-12-01: Initial Draft
-* 2024-03-01: Updated to take into account they key-assigment-replacement deprecation.
+
+- 2022-12-01: Initial Draft
+- 2024-03-01: Updated to take into account they key-assigment-replacement deprecation.
 
 ## Status
 
@@ -24,23 +25,29 @@ It is possible to change the keys at any time by submitting a transaction (i.e.,
 ### State required
 
 - `ValidatorConsumerPubKey` - Stores the validator assigned keys for every consumer chain.
+
 ```golang
 ConsumerValidatorsBytePrefix | len(chainID) | chainID | providerConsAddress -> consumerKey
 ```
+
 - `ValidatorByConsumerAddr` - Stores the mapping from validator addresses on consumer chains to validator addresses on the provider chain. Needed for the consumer initiated slashing sub-protocol.
+
 ```golang
 ValidatorsByConsumerAddrBytePrefix | len(chainID) | chainID | consumerConsAddress -> providerConsAddress
 ```
-- `ConsumerAddrsToPrune` - Stores the mapping from VSC ids to consumer validators addresses. Needed for pruning `ValidatorByConsumerAddr`. 
+
+- `ConsumerAddrsToPrune` - Stores the mapping from VSC ids to consumer validators addresses. Needed for pruning `ValidatorByConsumerAddr`.
+
 ```golang
 ConsumerAddrsToPruneBytePrefix | len(chainID) | chainID | vscID -> []consumerConsAddresses
 ```
 
-### Protocol overview 
+### Protocol overview
 
 On receiving a `MsgAssignConsumerKey(chainID, providerAddr, consumerKey)` message:
+
 ```golang
-// get validator from staking module  
+// get validator from staking module
 validator, found := stakingKeeper.GetValidator(providerAddr)
 if !found {
     return ErrNoValidatorFound
@@ -77,12 +84,13 @@ if _, consumerRegistered := GetConsumerClientId(chainID); consumerRegistered {
 // set the mapping from this validator's provider address to the new consumer key
 SetValidatorConsumerPubKey(chainID, providerConsAddr, consumerKey)
 
-// set the reverse mapping: from this validator's new consensus address 
+// set the reverse mapping: from this validator's new consensus address
 // on the consumer to its consensus address on the provider
 SetValidatorByConsumerAddr(chainID, consumerAddr, providerConsAddr)
 ```
 
-When a new consumer chain is registered, i.e., a client to the consumer chain is created, the provider constructs the consumer CCV module part of the genesis state (see `MakeConsumerGenesis`). 
+When a new consumer chain is registered, i.e., a client to the consumer chain is created, the provider constructs the consumer CCV module part of the genesis state (see `MakeConsumerGenesis`).
+
 ```golang
 func (k Keeper) MakeConsumerGenesis(chainID string) (gen consumertypes.GenesisState, nextValidatorsHash []byte, err error) {
     // ...
@@ -112,26 +120,29 @@ func (k Keeper) MakeConsumerGenesis(chainID string) (gen consumertypes.GenesisSt
 }
 ```
 
-Note that key assignment works hand-in-hand with [epochs](https://github.com/cosmos/interchain-security/blob/main/docs/docs/adrs/adr-014-epochs.md).
-For each consumer chain, we store the consumer validator set that is currently (i.e., in this epoch) validating the consumer chain. 
+Note that key assignment works hand-in-hand with [epochs](https://github.com/maany-xyz/ics/blob/main/docs/docs/adrs/adr-014-epochs.md).
+For each consumer chain, we store the consumer validator set that is currently (i.e., in this epoch) validating the consumer chain.
 Specifically, for each validator in the set we store among others, the public key that it is using on the consumer chain during the current (i.e., ongoing) epoch.
-At the end of every epoch, if there were validator set changes on the provider, then for every consumer chain, we construct a `VSCPacket` 
+At the end of every epoch, if there were validator set changes on the provider, then for every consumer chain, we construct a `VSCPacket`
 with all the validator updates and add it to the list of `PendingVSCPacket`s. We compute the validator updates needed by a consumer chain by
 comparing the stored list of consumer validators with the current bonded validators on the provider, with something similar to this:
+
 ```golang
-// get the valset that has been validating the consumer chain during this epoch 
+// get the valset that has been validating the consumer chain during this epoch
 currentValidators := GetConsumerValSet(consumerChain)
-// generate the validator updates needed to be sent through a `VSCPacket` by comparing the current validators 
+// generate the validator updates needed to be sent through a `VSCPacket` by comparing the current validators
 // in the epoch with the latest bonded validators
 valUpdates := DiffValidators(currentValidators, stakingmodule.GetBondedValidators())
 // update the current validators set for the upcoming epoch to be the latest bonded validators instead
 SetConsumerValSet(stakingmodule.GetBondedValidators())
 ```
+
 where `DiffValidators` internally checks if the consumer public key for a validator has changed since the last
 epoch and if so generates a validator update. This way, a validator can change its consumer public key for a consumer
 chain an arbitrary amount of times and only the last set consumer public key would be taken into account.
 
 On receiving a `SlashPacket` from a consumer chain with id `chainID` for a infraction of a validator `data.Validator`:
+
 ```golang
 func HandleSlashPacket(chainID string, data ccv.SlashPacketData) (success bool, err error) {
     // ...
@@ -148,6 +159,7 @@ func HandleSlashPacket(chainID string, data ccv.SlashPacketData) (success bool, 
 ```
 
 On receiving a `VSCMatured`:
+
 ```golang
 func OnRecvVSCMaturedPacket(packet channeltypes.Packet, data ccv.VSCMaturedPacketData) exported.Acknowledgement {
     // ...
@@ -162,6 +174,7 @@ func OnRecvVSCMaturedPacket(packet channeltypes.Packet, data ccv.VSCMaturedPacke
 ```
 
 On stopping a consumer chain:
+
 ```golang
 func (k Keeper) StopConsumerChain(ctx sdk.Context, chainID string, closeChan bool) (err error) {
     // ...
@@ -187,4 +200,4 @@ func (k Keeper) StopConsumerChain(ctx sdk.Context, chainID string, closeChan boo
 
 ## References
 
-* [Key assignment issue](https://github.com/cosmos/interchain-security/issues/26)
+- [Key assignment issue](https://github.com/maany-xyz/ics/issues/26)

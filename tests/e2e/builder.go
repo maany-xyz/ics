@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-const ICS_DOCKER_REGISTRY = "ghcr.io/cosmos/interchain-security"
+const ICS_DOCKER_REGISTRY = "ghcr.io/maany-xyz/ics"
 
 type DockerImgInfo struct {
 	Id           string `json:"Id"`
@@ -143,11 +143,11 @@ func getImageInfo(image string) ([]DockerImgInfo, error) {
 }
 
 // pullDockerImage pulls ICS image for a given tag from GitHub docker registry of ICS.
-// Checkout "https://github.com/cosmos/interchain-security/pkgs/container/interchain-security"
+// Checkout "https://github.com/maany-xyz/ics/pkgs/container/interchain-security"
 // for existing tagged versions
 func pullDockerImage(tag string, targetConfig TargetConfig) (string, error) {
 	// the image path for the GH registry
-	imageURL := fmt.Sprintf("ghcr.io/cosmos/interchain-security:%s", tag)
+	imageURL := fmt.Sprintf("ghcr.io/maany-xyz/ics:%s", tag)
 
 	// get information about local pulled image for this version
 	infos, err := getImageInfo(imageURL)
