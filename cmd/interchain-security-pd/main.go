@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	appparams.SetAddressPrefixes("cosmos")
+	appparams.SetAddressPrefixes("maany")
 	rootCmd := cmd.NewRootCmd()
 	if err := svrcmd.Execute(rootCmd, "", app.DefaultNodeHome); err != nil {
 		fmt.Fprintln(rootCmd.OutOrStderr(), err)
