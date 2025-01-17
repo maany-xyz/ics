@@ -101,7 +101,7 @@ import (
 )
 
 const (
-	AppName     = "interchain-security-c"
+	AppName     = "maany-ics-c"
 	upgradeName = "ics-v1-to-v2"
 
 	Bech32MainPrefix = "maany-app"

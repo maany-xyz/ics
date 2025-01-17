@@ -119,7 +119,7 @@ import (
 )
 
 const (
-	AppName     = "interchain-security-p"
+	AppName     = "maany-ics-p"
 	upgradeName = "ics-v1-to-v2"
 )
 
