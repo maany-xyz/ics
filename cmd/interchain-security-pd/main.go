@@ -18,4 +18,9 @@ func main() {
 		fmt.Fprintln(rootCmd.OutOrStderr(), err)
 		os.Exit(1)
 	}
+
+	// Print Module account address:
+	// moduleName := "blockrewards" // The name of your module account
+    // moduleAddress := authtypes.NewModuleAddress(moduleName)
+    // fmt.Printf("Address for module '%s': %s\n", moduleName, moduleAddress.String())
 }

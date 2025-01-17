@@ -19,8 +19,8 @@ endif
 sharedFlags = -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT)
 
-providerFlags := $(sharedFlags) -X github.com/cosmos/cosmos-sdk/version.AppName=custom-provider -X github.com/cosmos/cosmos-sdk/version.Name=custom-provider
-consumerFlags := $(sharedFlags) -X github.com/cosmos/cosmos-sdk/version.AppName=custom-consumer -X github.com/cosmos/cosmos-sdk/version.Name=custom-consumer
+providerFlags := $(sharedFlags) -X github.com/cosmos/cosmos-sdk/version.AppName=maany-provider -X github.com/cosmos/cosmos-sdk/version.Name=maany-provider
+consumerFlags := $(sharedFlags) -X github.com/cosmos/cosmos-sdk/version.AppName=maany-consumer -X github.com/cosmos/cosmos-sdk/version.Name=maany-consumer
 democracyFlags := $(sharedFlags) -X github.com/cosmos/cosmos-sdk/version.AppName=custom-ccd -X github.com/cosmos/cosmos-sdk/version.Name=custom-cdd
 standaloneFlags := $(sharedFlags) -X github.com/cosmos/cosmos-sdk/version.AppName=interchain-security-sd -X github.com/cosmos/cosmos-sdk/version.Name=interchain-security-sd
 
@@ -32,8 +32,8 @@ install: go.sum
 #		go install -ldflags "$(consumerFlags)" ./cmd/interchain-security-cd
 #		go install -ldflags "$(democracyFlags)" ./cmd/interchain-security-cdd
 #		go install -ldflags "$(standaloneFlags)" ./cmd/interchain-security-sd
-		go build -o $(GOPATH)/bin/custom-provider -ldflags "$(providerFlags)" ./cmd/interchain-security-pd
-		go build -o $(GOPATH)/bin/custom-consumer -ldflags "$(providerFlags)" ./cmd/interchain-security-cd
+		go build -o $(GOPATH)/bin/maany-provider -ldflags "$(providerFlags)" ./cmd/interchain-security-pd
+		go build -o $(GOPATH)/bin/maany-consumer -ldflags "$(providerFlags)" ./cmd/interchain-security-cd
 
 
 # run all tests: unit, integration, diff, and E2E
