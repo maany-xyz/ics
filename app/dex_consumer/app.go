@@ -101,10 +101,10 @@ import (
 )
 
 const (
-	AppName     = "maany-ics-app"
+	AppName     = "maany-ics-dex"
 	upgradeName = "ics-v1-to-v2"
 
-	Bech32MainPrefix = "maany-app"
+	Bech32MainPrefix = "maany-dex"
 )
 
 func init() {
@@ -215,8 +215,7 @@ func New(
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
 	encodingConfig := makeEncodingConfig()
-	logger.Info("BUILDING APP CONSUMER")
-
+	logger.Info("BUILDING DEX CONSUMER")
 	appCodec := encodingConfig.Codec
 	legacyAmino := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
