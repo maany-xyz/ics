@@ -6,6 +6,7 @@ import (
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 
+	//authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	appparams "github.com/maany-xyz/ics/v5/app/params"
 	app "github.com/maany-xyz/ics/v5/app/provider"
 	"github.com/maany-xyz/ics/v5/cmd/interchain-security-pd/cmd"

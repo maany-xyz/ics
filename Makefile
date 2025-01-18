@@ -25,9 +25,11 @@ democracyFlags := $(sharedFlags) -X github.com/cosmos/cosmos-sdk/version.AppName
 standaloneFlags := $(sharedFlags) -X github.com/cosmos/cosmos-sdk/version.AppName=interchain-security-sd -X github.com/cosmos/cosmos-sdk/version.Name=interchain-security-sd
 
 install: go.sum
+		export GOPATH=$(HOME)/go
 		export GOFLAGS='-buildmode=pie'
 		export CGO_CPPFLAGS="-D_FORTIFY_SOURCE=2"
 		export CGO_LDFLAGS="-Wl,-z,relro,-z,now -fstack-protector"
+
 #		go install -ldflags "$(providerFlags)" ./cmd/interchain-security-pd
 #		go install -ldflags "$(consumerFlags)" ./cmd/interchain-security-cd
 #		go install -ldflags "$(democracyFlags)" ./cmd/interchain-security-cdd

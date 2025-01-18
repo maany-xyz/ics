@@ -116,6 +116,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil/testdata/testpb"
 	sigtypes "github.com/cosmos/cosmos-sdk/types/tx/signing"
 	txmodule "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
+
+	blockrewardsmodule "github.com/maany-xyz/ics/v5/x/ccv/provider/blockrewards"
+	blockrewardskeeper "github.com/maany-xyz/ics/v5/x/ccv/provider/blockrewards/keeper"
+	blockrewardsmoduletypes "github.com/maany-xyz/ics/v5/x/ccv/provider/blockrewards/types"
 )
 
 const (
@@ -173,6 +177,7 @@ var (
 		govtypes.ModuleName:               {authtypes.Burner},
 		ibctransfertypes.ModuleName:       {authtypes.Minter, authtypes.Burner},
 		providertypes.ConsumerRewardsPool: nil,
+		blockrewardsmoduletypes.ModuleName: {authtypes.Minter},
 	}
 )
 
@@ -204,6 +209,7 @@ type App struct { // nolint: golint
 	StakingKeeper    *stakingkeeper.Keeper
 	SlashingKeeper   slashingkeeper.Keeper
 	MintKeeper       mintkeeper.Keeper
+	BlockRewardsKeeper 	 blockrewardskeeper.Keeper
 
 	// NOTE the distribution keeper should either be removed
 	// from consumer chain or set to use an independent
@@ -288,6 +294,7 @@ func New(
 		capabilitytypes.StoreKey,
 		providertypes.StoreKey,
 		consensusparamtypes.StoreKey,
+		blockrewardsmoduletypes.StoreKey,
 	)
 
 	// register streaming services
@@ -520,6 +527,14 @@ func New(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
+	app.BlockRewardsKeeper = blockrewardskeeper.NewKeeper(
+		appCodec,
+		keys[blockrewardsmoduletypes.StoreKey],
+    	app.BankKeeper,
+        *app.StakingKeeper,
+    	app.AccountKeeper,
+	)
+
 	// Add an IBC middleware callback to track the consumer rewards
 	var transferStack porttypes.IBCModule
 	transferStack = transfer.NewIBCModule(app.TransferKeeper)
@@ -561,6 +576,8 @@ func New(
 		params.NewAppModule(app.ParamsKeeper),
 		transfer.NewAppModule(app.TransferKeeper),
 		providerModule,
+		blockrewardsmodule.NewAppModule(appCodec, app.BlockRewardsKeeper),
+
 	)
 
 	// NOTE: @Msalopek -> ModuleBasic override is happening because Tx commands don't work without it
@@ -642,6 +659,8 @@ func New(
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
 		providertypes.ModuleName,
+		blockrewardsmoduletypes.ModuleName,
+
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -669,6 +688,8 @@ func New(
 		vestingtypes.ModuleName,
 		providertypes.ModuleName,
 		consensusparamtypes.ModuleName,
+		blockrewardsmoduletypes.ModuleName,
+
 	)
 
 	app.MM.RegisterInvariants(&app.CrisisKeeper)
@@ -1043,6 +1064,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibcexported.ModuleName)
 	paramsKeeper.Subspace(providertypes.ModuleName)
+	paramsKeeper.Subspace(blockrewardsmoduletypes.ModuleName)
 
 	return paramsKeeper
 }
@@ -1056,7 +1078,3 @@ func MakeTestEncodingConfig() appencoding.EncodingConfig {
 	return encodingConfig
 }
 
-func makeEncodingConfig() appencoding.EncodingConfig {
-	encodingConfig := appencoding.MakeTestEncodingConfig()
-	return encodingConfig
-}
