@@ -8,7 +8,6 @@ vendor/
 build/
 .vscode
 .idea
-get_blockrewards_address.go
 sh/
 # docusaurus versioned docs created during build
 docs/versioned_docs
