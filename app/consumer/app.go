@@ -215,8 +215,6 @@ func New(
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
 	encodingConfig := makeEncodingConfig()
-	logger.Info("BUILDING APP CONSUMER")
-
 	appCodec := encodingConfig.Codec
 	legacyAmino := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry

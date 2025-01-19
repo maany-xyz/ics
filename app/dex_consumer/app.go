@@ -98,6 +98,10 @@ import (
 	ibcconsumer "github.com/maany-xyz/ics/v5/x/ccv/consumer"
 	ibcconsumerkeeper "github.com/maany-xyz/ics/v5/x/ccv/consumer/keeper"
 	ibcconsumertypes "github.com/maany-xyz/ics/v5/x/ccv/consumer/types"
+
+	mintburn "github.com/maany-xyz/ics/v5/x/ccv/consumer/mintburn/keeper"
+	mintburnmodule "github.com/maany-xyz/ics/v5/x/ccv/consumer/mintburn/module"
+	mintburntypes "github.com/maany-xyz/ics/v5/x/ccv/consumer/mintburn/types"
 )
 
 const (
@@ -149,6 +153,8 @@ var (
 		ibcconsumertypes.ConsumerRedistributeName:     nil,
 		ibcconsumertypes.ConsumerToSendToProviderName: nil,
 		ibctransfertypes.ModuleName:                   {authtypes.Minter, authtypes.Burner},
+		mintburntypes.MintBurnModuleAccount: 		   {authtypes.Minter, authtypes.Burner},
+
 		
 	}
 )
@@ -203,6 +209,8 @@ type App struct { // nolint: golint
 	// simulation manager
 	sm           *module.SimulationManager
 	configurator module.Configurator
+	MintBurnKeeper mintburn.Keeper
+
 }
 
 // New returns a reference to an initialized App.
@@ -215,7 +223,6 @@ func New(
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
 	encodingConfig := makeEncodingConfig()
-	logger.Info("BUILDING DEX CONSUMER")
 	appCodec := encodingConfig.Codec
 	legacyAmino := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
@@ -240,6 +247,8 @@ func New(
 		capabilitytypes.StoreKey, feegrant.StoreKey, authzkeeper.StoreKey,
 		consensusparamtypes.StoreKey,
 		ibcconsumertypes.StoreKey,
+		mintburntypes.StoreKey,
+
 	)
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -398,6 +407,10 @@ func New(
 	app.ConsumerKeeper = *app.ConsumerKeeper.SetHooks(app.SlashingKeeper.Hooks())
 	consumerModule := ibcconsumer.NewAppModule(app.ConsumerKeeper, app.GetSubspace(ibcconsumertypes.ModuleName))
 
+	app.MintBurnKeeper = mintburn.NewKeeper(
+		app.BankKeeper,
+		mintburntypes.ModuleName,
+	)
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
 		appCodec,
 		keys[ibctransfertypes.StoreKey],
@@ -412,10 +425,10 @@ func New(
 	)
 	transferModule := transfer.NewAppModule(app.TransferKeeper)
 	ibcmodule := transfer.NewIBCModule(app.TransferKeeper)
-
+	mintburnMiddleware := mintburnmodule.NewIBCMiddleware(ibcmodule, app.MintBurnKeeper)
 	// create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter()
-	ibcRouter.AddRoute(ibctransfertypes.ModuleName, ibcmodule)
+	ibcRouter.AddRoute(ibctransfertypes.ModuleName, mintburnMiddleware)
 	ibcRouter.AddRoute(ibcconsumertypes.ModuleName, consumerModule)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
@@ -457,6 +470,8 @@ func New(
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
 		consumerModule,
+		mintburnmodule.NewAppModule(appCodec, app.MintBurnKeeper, app.Logger()),
+
 	)
 
 	ModuleBasics = module.NewBasicManagerFromManager(
@@ -533,6 +548,8 @@ func New(
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
 		ibcconsumertypes.ModuleName,
+		mintburntypes.ModuleName,
+
 	)
 
 	app.MM.RegisterInvariants(&app.CrisisKeeper)

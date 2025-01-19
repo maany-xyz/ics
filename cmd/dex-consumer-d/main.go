@@ -5,6 +5,7 @@ import (
 	"os"
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
+	//authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	app "github.com/maany-xyz/ics/v5/app/dex_consumer"
 	appparams "github.com/maany-xyz/ics/v5/app/params"
@@ -20,4 +21,9 @@ func main() {
 		fmt.Fprintln(rootCmd.OutOrStderr(), err)
 		os.Exit(1)
 	}
+
+	// Print Module account address:
+	// moduleName := "mintburn" // The name of your module account
+    // moduleAddress := authtypes.NewModuleAddress(moduleName)
+    // fmt.Printf("Address for module '%s': %s\n", moduleName, moduleAddress.String())
 }
