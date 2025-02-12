@@ -120,6 +120,10 @@ import (
 	blockrewardsmodule "github.com/maany-xyz/ics/v5/x/ccv/provider/blockrewards"
 	blockrewardskeeper "github.com/maany-xyz/ics/v5/x/ccv/provider/blockrewards/keeper"
 	blockrewardsmoduletypes "github.com/maany-xyz/ics/v5/x/ccv/provider/blockrewards/types"
+
+	consumergov "github.com/maany-xyz/ics/v5/x/ccv/provider/consumergov"
+	consumergovkeeper "github.com/maany-xyz/ics/v5/x/ccv/provider/consumergov/keeper"
+	consumergovtypes "github.com/maany-xyz/ics/v5/x/ccv/provider/consumergov/types"
 )
 
 const (
@@ -210,6 +214,7 @@ type App struct { // nolint: golint
 	SlashingKeeper   slashingkeeper.Keeper
 	MintKeeper       mintkeeper.Keeper
 	BlockRewardsKeeper 	 blockrewardskeeper.Keeper
+	ConsumerGovKeeper 	 consumergovkeeper.Keeper
 
 	// NOTE the distribution keeper should either be removed
 	// from consumer chain or set to use an independent
@@ -295,6 +300,8 @@ func New(
 		providertypes.StoreKey,
 		consensusparamtypes.StoreKey,
 		blockrewardsmoduletypes.StoreKey,
+		consumergovtypes.StoreKey,
+
 	)
 
 	// register streaming services
@@ -505,6 +512,7 @@ func New(
 		AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
 		AddRoute(providertypes.RouterKey, ibcprovider.NewProviderProposalHandler(app.ProviderKeeper))
+		//AddRoute()
 	// Set legacy router for backwards compatibility with gov v1beta1
 	app.GovKeeper.SetLegacyRouter(govRouter)
 
@@ -534,6 +542,8 @@ func New(
         *app.StakingKeeper,
     	app.AccountKeeper,
 	)
+
+	app.ConsumerGovKeeper = consumergovkeeper.NewKeeper(appCodec, keys[consumergovtypes.StoreKey], *app.GovKeeper)
 
 	// Add an IBC middleware callback to track the consumer rewards
 	var transferStack porttypes.IBCModule
@@ -577,6 +587,7 @@ func New(
 		transfer.NewAppModule(app.TransferKeeper),
 		providerModule,
 		blockrewardsmodule.NewAppModule(appCodec, app.BlockRewardsKeeper),
+		consumergov.NewAppModule(appCodec, &app.ConsumerGovKeeper),
 
 	)
 
@@ -660,6 +671,8 @@ func New(
 		vestingtypes.ModuleName,
 		providertypes.ModuleName,
 		blockrewardsmoduletypes.ModuleName,
+		consumergovtypes.ModuleName,
+
 
 	)
 
@@ -1065,6 +1078,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(ibcexported.ModuleName)
 	paramsKeeper.Subspace(providertypes.ModuleName)
 	paramsKeeper.Subspace(blockrewardsmoduletypes.ModuleName)
+	paramsKeeper.Subspace(consumergovtypes.ModuleName)
 
 	return paramsKeeper
 }

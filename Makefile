@@ -25,18 +25,28 @@ dex_consumerFlags := $(sharedFlags) -X github.com/cosmos/cosmos-sdk/version.AppN
 democracyFlags := $(sharedFlags) -X github.com/cosmos/cosmos-sdk/version.AppName=custom-ccd -X github.com/cosmos/cosmos-sdk/version.Name=custom-cdd
 standaloneFlags := $(sharedFlags) -X github.com/cosmos/cosmos-sdk/version.AppName=interchain-security-sd -X github.com/cosmos/cosmos-sdk/version.Name=interchain-security-sd
 
+GOPATH ?= $(HOME)/go
+BIN_PATH := $(GOPATH)/bin
+
 install: go.sum
-		export GOPATH=$(HOME)/go
-		export GOFLAGS='-buildmode=pie'
-		export CGO_CPPFLAGS="-D_FORTIFY_SOURCE=2"
-		export CGO_LDFLAGS="-Wl,-z,relro,-z,now -fstack-protector"
+	# Ensure GOPATH is set
+	@echo "Using GOPATH: $(GOPATH)"
+	@mkdir -p $(BIN_PATH)  # Ensure bin directory exists
+
+	# Set build environment variables
+	GOFLAGS='-buildmode=pie' \
+	CGO_CPPFLAGS="-D_FORTIFY_SOURCE=2" \
+	CGO_LDFLAGS="-Wl,-z,relro,-z,now -fstack-protector" \
+
+	# Build and place binary in $(GOPATH)/bin
+	go build -o $(BIN_PATH)/maany-provider -ldflags "$(providerFlags)" ./cmd/interchain-security-pd
 #		go install -ldflags "$(providerFlags)" ./cmd/interchain-security-pd
 #		go install -ldflags "$(consumerFlags)" ./cmd/interchain-security-cd
 #		go install -ldflags "$(democracyFlags)" ./cmd/interchain-security-cdd
 #		go install -ldflags "$(standaloneFlags)" ./cmd/interchain-security-sd
 #		go build -o $(GOPATH)/bin/maany-provider -ldflags "$(providerFlags)" ./cmd/interchain-security-pd
-		go build -o $(GOPATH)/bin/maany-consumer -ldflags "$(consumerFlags)" ./cmd/interchain-security-cd
-		go build -o $(GOPATH)/bin/maany-dex -ldflags "$(dex_consumerFlags)" ./cmd/dex-consumer-d
+#		go build -o $(GOPATH)/bin/maany-consumer -ldflags "$(consumerFlags)" ./cmd/interchain-security-cd
+#		go build -o $(GOPATH)/bin/maany-dex -ldflags "$(dex_consumerFlags)" ./cmd/dex-consumer-d
 
 
 # run all tests: unit, integration, diff, and E2E
