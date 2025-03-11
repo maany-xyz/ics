@@ -1,10 +1,6 @@
 package consumergov
 
 import (
-	"encoding/json"
-	"fmt"
-
-	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
@@ -12,7 +8,6 @@ import (
 
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
 	consumergov "github.com/maany-xyz/ics/v5/x/ccv/provider/consumergov/keeper"
-	consumergovtypes "github.com/maany-xyz/ics/v5/x/ccv/provider/consumergov/types"
 )
 
 
@@ -28,37 +23,6 @@ func NewIBCMiddleware(app porttypes.IBCModule, k consumergov.Keeper) IBCMiddlewa
 	}
 }
 
-// ✅ Handle sending IBC messages
-func (im IBCMiddleware) SendGovMessage(ctx sdk.Context, msg consumergovtypes.MsgConsumerGovProposal) error {
-	// Serialize the governance message
-
-	ctx.Logger().Info("In SendGovMessage ", "msg", msg)
-	
-	data, err := json.Marshal(msg)
-	if err != nil {
-		return errors.Wrap(err, "failed to serialize governance proposal")
-	}
-
-	// Construct an IBC Packet
-	packet := channeltypes.Packet{
-		SourcePort:    "provider",         // Provider's port
-		SourceChannel: "channel-0",        // The channel ID connected to the consumer
-		DestinationPort: "consumer",       // The consumer's port
-		DestinationChannel: "channel-0",   // The corresponding channel on the consumer
-		Data:          data,               // Serialized governance proposal
-	}
-
-	// Send the packet using the underlying IBC module
-	ack := im.app.OnRecvPacket(ctx, packet, nil)
-	// Check if the acknowledgment contains an error
-	if !ack.Success() {
-		return fmt.Errorf("failed to send IBC packet: %s", ack.Acknowledgement())
-	}
-
-	ctx.Logger().Info("Send Packet successfully ", "ack", ack.Acknowledgement())
-
-	return nil
-}
 
 func (im IBCMiddleware) OnAcknowledgementPacket(
 	ctx sdk.Context,
