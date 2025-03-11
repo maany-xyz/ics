@@ -1,6 +1,9 @@
 package consumergov
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
@@ -12,7 +15,6 @@ import (
 	consumergovtypes "github.com/maany-xyz/ics/v5/x/ccv/provider/consumergov/types"
 )
 
-//var _ porttypes.Middleware = &IBCMiddleware{}
 
 type IBCMiddleware struct {
 	app    porttypes.IBCModule
@@ -29,10 +31,13 @@ func NewIBCMiddleware(app porttypes.IBCModule, k consumergov.Keeper) IBCMiddlewa
 // ✅ Handle sending IBC messages
 func (im IBCMiddleware) SendGovMessage(ctx sdk.Context, msg consumergovtypes.MsgConsumerGovProposal) error {
 	// Serialize the governance message
-	// data, err := im.keeper.cdc.MarshalJSON(msg)
-	// if err != nil {
-	// 	return errors.Wrap(err, "failed to serialize governance proposal")
-	// }
+
+	ctx.Logger().Info("In SendGovMessage ", "msg", msg)
+	
+	data, err := json.Marshal(msg)
+	if err != nil {
+		return errors.Wrap(err, "failed to serialize governance proposal")
+	}
 
 	// Construct an IBC Packet
 	packet := channeltypes.Packet{
@@ -44,10 +49,13 @@ func (im IBCMiddleware) SendGovMessage(ctx sdk.Context, msg consumergovtypes.Msg
 	}
 
 	// Send the packet using the underlying IBC module
-	err = im.app.OnRecvPacket(ctx, packet, nil)
-	if err != nil {
-		return errors.Wrap(err, "failed to send IBC packet")
+	ack := im.app.OnRecvPacket(ctx, packet, nil)
+	// Check if the acknowledgment contains an error
+	if !ack.Success() {
+		return fmt.Errorf("failed to send IBC packet: %s", ack.Acknowledgement())
 	}
+
+	ctx.Logger().Info("Send Packet successfully ", "ack", ack.Acknowledgement())
 
 	return nil
 }
@@ -59,7 +67,7 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 	_ sdk.AccAddress,
 ) error {
 	//var ack channeltypes.Acknowledgement
-	
+	ctx.Logger().Info("Received acknowledgement packet", "ack" , acknowledgement)
 	return nil
 }
 
@@ -151,9 +159,6 @@ func (im IBCMiddleware) OnRecvPacket(
 	relayer sdk.AccAddress,
 ) exported.Acknowledgement {
 	// executes the IBC transfer OnRecv logic
-	ctx.Logger().Info("In OnRecvPacket mintburn")
-	//ack := im.app.OnRecvPacket(ctx, packet, relayer)
-	ack := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
-
-	return ack
+	ctx.Logger().Info("In OnRecvPacket consumergov")
+	return im.app.OnRecvPacket(ctx, packet, relayer)
 }

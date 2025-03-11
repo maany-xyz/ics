@@ -549,9 +549,12 @@ func New(
 	var transferStack porttypes.IBCModule
 	transferStack = transfer.NewIBCModule(app.TransferKeeper)
 	transferStack = ibcprovider.NewIBCMiddleware(transferStack, app.ProviderKeeper)
+	consumergovMiddleware := consumergov.NewIBCMiddleware(transferStack, app.ConsumerGovKeeper)
 
 	// create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter()
+	ibcRouter.AddRoute(ibctransfertypes.ModuleName, consumergovMiddleware)
+
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferStack)
 	ibcRouter.AddRoute(providertypes.ModuleName, providerModule)
 	app.IBCKeeper.SetRouter(ibcRouter)
