@@ -543,7 +543,7 @@ func New(
     	app.AccountKeeper,
 	)
 
-	app.ConsumerGovKeeper = consumergovkeeper.NewKeeper(appCodec, keys[consumergovtypes.StoreKey], *app.GovKeeper)
+	app.ConsumerGovKeeper = consumergovkeeper.NewKeeper(appCodec, keys[consumergovtypes.StoreKey], *app.GovKeeper, app.IBCKeeper.ChannelKeeper)
 
 	// Add an IBC middleware callback to track the consumer rewards
 	var transferStack porttypes.IBCModule

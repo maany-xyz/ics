@@ -16,17 +16,21 @@ type Keeper struct {
 	cdc		  codec.BinaryCodec
     storeKey  storetypes.StoreKey
     govKeeper govkeeper.Keeper
+    channelKeeper types.ChannelKeeper
 }
 
 func NewKeeper (
     cdc           codec.BinaryCodec,
     storeKey      storetypes.StoreKey,
     govKeeper 	  govkeeper.Keeper,
+    channelKeeper types.ChannelKeeper,
+
 ) Keeper {
     return Keeper{
         cdc:           cdc,
         storeKey:      storeKey,
         govKeeper: 	   govKeeper,
+        channelKeeper: channelKeeper,
     }
 }
 
