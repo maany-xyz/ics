@@ -16,7 +16,6 @@ type Keeper struct {
 	cdc		  codec.BinaryCodec
     storeKey  storetypes.StoreKey
     govKeeper govkeeper.Keeper
-    //icsKeeper types.ICSKeeper
 }
 
 func NewKeeper (
