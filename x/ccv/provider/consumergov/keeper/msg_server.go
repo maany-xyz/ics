@@ -2,6 +2,8 @@ package keeper
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -25,6 +27,18 @@ func (k msgServer) ConsumerGovProposal(goCtx context.Context, msg *types.MsgCons
 		"consumer_id", msg.ConsumerId,
 		"action", msg.Action,
 	)
+
+	channelID := "channel-0"
+
+	data, err := json.Marshal(msg)
+	if err != nil {
+		return nil , fmt.Errorf("couldnt sequence channel")
+	}
+
+	endErr := k.SendCustomIBCMessage(ctx, channelID, data)
+	if endErr != nil {
+		return nil, fmt.Errorf("errored out with err %w", endErr)
+	}
 
 	return &types.MsgConsumerGovProposalResponse{}, nil
 }

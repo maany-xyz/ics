@@ -5,14 +5,17 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 
 	"cosmossdk.io/log"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
+	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	"github.com/maany-xyz/ics/v5/x/ccv/provider/consumergov/types"
+
+	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 )
 
 type Keeper struct {
@@ -20,6 +23,7 @@ type Keeper struct {
     storeKey  storetypes.StoreKey
     govKeeper govkeeper.Keeper
     channelKeeper types.ChannelKeeper
+    scopedKeeper capabilitykeeper.ScopedKeeper
 }
 
 func NewKeeper (
@@ -27,6 +31,7 @@ func NewKeeper (
     storeKey      storetypes.StoreKey,
     govKeeper 	  govkeeper.Keeper,
     channelKeeper types.ChannelKeeper,
+        scopedKeeper capabilitykeeper.ScopedKeeper,
 
 ) Keeper {
     return Keeper{
@@ -34,6 +39,7 @@ func NewKeeper (
         storeKey:      storeKey,
         govKeeper: 	   govKeeper,
         channelKeeper: channelKeeper,
+        scopedKeeper: scopedKeeper,
     }
 }
 
@@ -45,36 +51,27 @@ func (k Keeper) Logger(ctx context.Context) log.Logger {
 
 
 func (k Keeper) SendCustomIBCMessage(ctx sdk.Context, channelID string, data []byte) error {
-    portID := "consumer" // Make sure this is the correct port
+    ctx.Logger().Info("inside SendCustomIBCMessage")
 
-    channel, found := k.channelKeeper.GetChannel(ctx, portID, channelID)
+    portID := "provider" 
+
+    timeoutTimestamp := uint64(ctx.BlockTime().UnixNano()) + 60000000000      // 60 seconds timeout
+    channelCap, found := k.scopedKeeper.GetCapability(ctx, host.ChannelCapabilityPath(portID, channelID))
     if !found {
-        return fmt.Errorf("channel not found for port %s and channel %s", portID, channelID)
-    }
-    seq, found := k.channelKeeper.GetNextSequenceSend(ctx, portID, channelID)
-    if !found {
-                return fmt.Errorf("couldnt sequence channel ", portID, channelID)
-
+        ctx.Logger().Error("The channelCap not found ")
+        return fmt.Errorf("error: channel not found")
     }
 
-    // Define the packet data structure
-    packetData := channeltypes.Packet{
-        Sequence:           seq,
-        SourcePort:         portID,
-        SourceChannel:      channelID,
-        DestinationPort:    channel.Counterparty.PortId,
-        DestinationChannel: channel.Counterparty.ChannelId,
-        Data:               data,  // Your encoded message
-        TimeoutTimestamp:   uint64(ctx.BlockTime().UnixNano()) + 60000000000, // 60 sec timeout
+    timeoutHeight := clienttypes.NewHeight(0, uint64(ctx.BlockHeight()+100)) // 100 blocks timeout
+
+    res, err := k.channelKeeper.SendPacket(ctx, channelCap, portID, channelID, timeoutHeight, timeoutTimestamp, data)
+    if err != nil {
+        ctx.Logger().Error("The err is ", "err", err)
+        return err
     }
 
-    k.Logger().Info("dkdkd", "kd", packetData)
+    ctx.Logger().Info("The res is ", "res", res)
 
-    // Send the packet via IBC
-    // err := k.channelKeeper.SendPacket(ctx, nil, packetData)
-    // if err != nil {
-    //     return fmt.Errorf("failed to send IBC packet: %v", err)
-    // }
 
     return nil
 } 
