@@ -124,6 +124,10 @@ import (
 	consumergov "github.com/maany-xyz/ics/v5/x/ccv/provider/consumergov"
 	consumergovkeeper "github.com/maany-xyz/ics/v5/x/ccv/provider/consumergov/keeper"
 	consumergovtypes "github.com/maany-xyz/ics/v5/x/ccv/provider/consumergov/types"
+
+	mintburn "github.com/maany-xyz/ics/v5/x/ccv/provider/mintburn/keeper"
+	mintburnmodule "github.com/maany-xyz/ics/v5/x/ccv/provider/mintburn/module"
+	mintburntypes "github.com/maany-xyz/ics/v5/x/ccv/provider/mintburn/types"
 )
 
 const (
@@ -182,6 +186,7 @@ var (
 		ibctransfertypes.ModuleName:       {authtypes.Minter, authtypes.Burner},
 		providertypes.ConsumerRewardsPool: nil,
 		blockrewardsmoduletypes.ModuleName: {authtypes.Minter},
+		mintburntypes.MintBurnModuleAccount: 		   {authtypes.Minter, authtypes.Burner},
 	}
 )
 
@@ -242,6 +247,8 @@ type App struct { // nolint: golint
 	// simulation manager
 	sm           *module.SimulationManager
 	configurator module.Configurator
+	MintBurnKeeper mintburn.Keeper
+
 }
 
 func init() {
@@ -301,6 +308,7 @@ func New(
 		consensusparamtypes.StoreKey,
 		blockrewardsmoduletypes.StoreKey,
 		consumergovtypes.StoreKey,
+		mintburntypes.StoreKey,
 
 	)
 
@@ -440,7 +448,6 @@ func New(
 		app.BaseApp,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
-
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper.SetHooks(
@@ -460,6 +467,16 @@ func New(
 		scopedIBCKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
+
+	app.MintBurnKeeper = mintburn.NewKeeper(
+		mintburntypes.ModuleName,
+		keys[mintburntypes.StoreKey],
+		app.BankKeeper, 
+		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.ConnectionKeeper, 
+		app.IBCKeeper.ClientKeeper,
+	)
+
 
 	// create evidence keeper with router
 	app.EvidenceKeeper = *evidencekeeper.NewKeeper(
@@ -543,13 +560,12 @@ func New(
     	app.AccountKeeper,
 	)
 
-	app.ConsumerGovKeeper = consumergovkeeper.NewKeeper(appCodec, keys[consumergovtypes.StoreKey], *app.GovKeeper, app.IBCKeeper.ChannelKeeper, app.ScopedIBCKeeper)
 
 	// Add an IBC middleware callback to track the consumer rewards
 	var transferStack porttypes.IBCModule
 	transferStack = transfer.NewIBCModule(app.TransferKeeper)
 	transferStack = ibcprovider.NewIBCMiddleware(transferStack, app.ProviderKeeper)
-
+	transferStack = mintburnmodule.NewIBCMiddleware(transferStack, app.MintBurnKeeper)
 	// create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter()
 
@@ -589,6 +605,7 @@ func New(
 		providerModule,
 		blockrewardsmodule.NewAppModule(appCodec, app.BlockRewardsKeeper),
 		consumergov.NewAppModule(appCodec, &app.ConsumerGovKeeper),
+		mintburnmodule.NewAppModule(appCodec, app.MintBurnKeeper, app.Logger()),
 
 	)
 
@@ -703,7 +720,8 @@ func New(
 		providertypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		blockrewardsmoduletypes.ModuleName,
-
+		mintburntypes.ModuleName,
+		
 	)
 
 	app.MM.RegisterInvariants(&app.CrisisKeeper)
@@ -809,6 +827,9 @@ func New(
 	app.ScopedIBCKeeper = scopedIBCKeeper
 	app.ScopedTransferKeeper = scopedTransferKeeper
 	app.ScopedIBCProviderKeeper = scopedIBCProviderKeeper
+
+	app.ConsumerGovKeeper = consumergovkeeper.NewKeeper(appCodec, keys[consumergovtypes.StoreKey], *app.GovKeeper, app.IBCKeeper.ChannelKeeper, app.ScopedIBCProviderKeeper)
+
 
 	return app
 }

@@ -2,11 +2,11 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 
+	"cosmossdk.io/errors"
 	"cosmossdk.io/log"
 
 	storetypes "cosmossdk.io/store/types"
@@ -54,15 +54,20 @@ func (k Keeper) SendCustomIBCMessage(ctx sdk.Context, channelID string, data []b
     ctx.Logger().Info("inside SendCustomIBCMessage")
 
     portID := "provider" 
+    timeoutTimestamp := uint64(ctx.BlockTime().UnixNano()) + 10000000000      // 60 seconds timeout
+    name := host.ChannelCapabilityPath(portID, channelID)
+    ctx.Logger().Info("In here with timestamp port and channelId ", "portId", portID, "channekId", channelID, "tmstp", timeoutTimestamp, "capName", name )
 
-    timeoutTimestamp := uint64(ctx.BlockTime().UnixNano()) + 60000000000      // 60 seconds timeout
-    channelCap, found := k.scopedKeeper.GetCapability(ctx, host.ChannelCapabilityPath(portID, channelID))
+    channelCap, found := k.scopedKeeper.GetCapability(ctx, name)
+    ctx.Logger().Info("The channel cap is ", "chanelCap", channelCap, "found", found )
+
     if !found {
         ctx.Logger().Error("The channelCap not found ")
-        return fmt.Errorf("error: channel not found")
+        return errors.New("Error:", 103, "cant find channel capabilites")
     }
+    timeoutHeight := clienttypes.NewHeight(0, uint64(ctx.BlockHeight()+10)) // 100 blocks timeout
 
-    timeoutHeight := clienttypes.NewHeight(0, uint64(ctx.BlockHeight()+100)) // 100 blocks timeout
+    ctx.Logger().Info("in here with ", "portID", portID, "channelId", channelID, "timeoutHeight", timeoutHeight, "channelCap", channelCap)
 
     res, err := k.channelKeeper.SendPacket(ctx, channelCap, portID, channelID, timeoutHeight, timeoutTimestamp, data)
     if err != nil {

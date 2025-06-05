@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	sdkmath "cosmossdk.io/math"
+	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
@@ -15,7 +16,8 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
-	mintburn "github.com/maany-xyz/ics/v5/x/ccv/consumer/mintburn/keeper"
+	ibctmtypes "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	mintburn "github.com/maany-xyz/ics/v5/x/ccv/provider/mintburn/keeper"
 )
 
 //var _ porttypes.Middleware = &IBCMiddleware{}
@@ -36,10 +38,72 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 	acknowledgement []byte,
-	_ sdk.AccAddress,
+	relayer sdk.AccAddress,
 ) error {
 	//var ack channeltypes.Acknowledgement
-	
+	ctx.Logger().Info("In OnAcknowledgementPacket")
+
+	var ack channeltypes.Acknowledgement
+	if err := ibctransfertypes.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
+		ctx.Logger().Error("Cant unmarshal ack", "err", err)
+		return im.app.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+	} else {
+
+		if ack.Response == nil {
+			ctx.Logger().Error("Acknowledgement response is nil")
+			return im.app.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+		}
+
+		switch resp := ack.Response.(type) {
+			case *channeltypes.Acknowledgement_Error:
+				// This was an error, handle refund logic or logging
+				ctx.Logger().Info("Acknowledgement contains error", "error", resp.Error)
+				return im.app.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+
+			case *channeltypes.Acknowledgement_Result:
+				ctx.Logger().Info("In case successful ack, initialte burning")
+				var data ibctransfertypes.FungibleTokenPacketData
+				if err := json.Unmarshal(packet.GetData(), &data); err != nil {
+					ctx.Logger().Error("Cant unmarshal data", "err", err)
+					return err
+				}
+				ctx.Logger().Info("unpacked data with: ","data",data)
+				// Only burn if the denom is expected and the channel is whitelisted
+				if packet.SourcePort == "transfer" &&
+					im.keeper.IsAllowedChannel(ctx, packet.SourceChannel) &&
+					data.Denom == "stake" {
+
+					ctx.Logger().Info("is valid source port and channel-id")
+
+					amount, ok := sdkmath.NewIntFromString(data.Amount)
+					if !ok {
+						ctx.Logger().Error("invalid token amount", "err", "")
+						return fmt.Errorf("invalid token amount")
+					}
+
+					coin := sdk.NewCoin(data.Denom, amount)
+
+					ctx.Logger().Info("In here with coin and amount", "amount", amount, "coin", coin)
+
+					// Build escrow address and burn the amount
+					escrowAddr := ibctransfertypes.GetEscrowAddress(packet.SourcePort, packet.SourceChannel)
+					if err := im.keeper.BurnEscrowedTokens(ctx, escrowAddr, coin); err != nil {
+						ctx.Logger().Error("Err burning tokens", "err", err)
+						return nil
+					}
+
+					sdk.UnwrapSDKContext(ctx).Logger().Info("Successfully burned escrowed tokens after ACK",
+						"coin", coin.String(), "escrow", escrowAddr.String())
+				}
+				
+			default:
+				ctx.Logger().Error("Unexpected acknowledgement type")
+				return im.app.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+		}
+
+
+	}
+
 	return nil
 }
 
@@ -69,7 +133,42 @@ func (im IBCMiddleware) OnChanOpenAck(
 	counterpartyChannelID string,
 	counterpartyVersion string,
 ) error {
+	ctx.Logger().Info("In OnChanOpenAck!")
 	// call underlying app's OnChanOpenAck callback with the counterparty app version.
+	if portID == "transfer" {
+		ctx.Logger().Info("In OnChanOpenAck: registering a new tranfer channel.")
+		channel, found := im.keeper.ChannelKeeper.GetChannel(ctx, portID, channelID)
+		if !found {
+			return fmt.Errorf("channel not found")
+		}
+		ctx.Logger().Info("Channel Found")
+		connectionID := channel.ConnectionHops[0]
+		ctx.Logger().Info("Connection Id: ", "ID", connectionID)
+		connection, found := im.keeper.ConnectionKeeper.GetConnection(ctx, connectionID)
+		if !found {
+			return fmt.Errorf("connection %s not found", connectionID)
+		}
+		ctx.Logger().Info("Connection found.")
+		clientID := connection.Counterparty.ClientId
+		ctx.Logger().Info("Cliend ID: ", "ID", clientID)
+		clientState, found := im.keeper.ClientKeeper.GetClientState(ctx, clientID)
+		if !found {
+			return fmt.Errorf("client state for %s not found", clientID)
+		}
+		ctx.Logger().Info("Client state found.")
+		tmClientState, ok := clientState.(*ibctmtypes.ClientState)
+		if !ok {
+			return fmt.Errorf("unexpected client state type")
+		}
+		ctx.Logger().Info("TM client state found.", "State", tmClientState.String())
+		if tmClientState.ChainId == "neutcons" {
+			store := prefix.NewStore(ctx.KVStore(im.keeper.StoreKey), []byte("allowed-channel/"))
+			store.Set([]byte(channelID), []byte{1})
+			ctx.Logger().Info("Successfully set channel-id", "ID", channelID)
+		}
+
+	}
+
 	return im.app.OnChanOpenAck(ctx, portID, channelID, counterpartyChannelID, counterpartyVersion)
 }
  
@@ -79,7 +178,42 @@ func (im IBCMiddleware) OnChanOpenConfirm(
 	portID,
 	channelID string,
 ) error {
-	// call underlying app's OnChanOpenConfirm callback.
+	ctx.Logger().Info("In OnChanOpenAck!")
+	// call underlying app's OnChanOpenAck callback with the counterparty app version.
+	if portID == "transfer" {
+		ctx.Logger().Info("In OnChanOpenAck: registering a new tranfer channel.")
+		channel, found := im.keeper.ChannelKeeper.GetChannel(ctx, portID, channelID)
+		if !found {
+			return fmt.Errorf("channel not found")
+		}
+		ctx.Logger().Info("Channel Found")
+		connectionID := channel.ConnectionHops[0]
+		ctx.Logger().Info("Connection Id: ", "ID", connectionID)
+		connection, found := im.keeper.ConnectionKeeper.GetConnection(ctx, connectionID)
+		if !found {
+			return fmt.Errorf("connection %s not found", connectionID)
+		}
+		ctx.Logger().Info("Connection found.")
+		clientID := connection.Counterparty.ClientId
+		ctx.Logger().Info("Cliend ID: ", "ID", clientID)
+		clientState, found := im.keeper.ClientKeeper.GetClientState(ctx, clientID)
+		if !found {
+			return fmt.Errorf("client state for %s not found", clientID)
+		}
+		ctx.Logger().Info("Client state found.")
+		tmClientState, ok := clientState.(*ibctmtypes.ClientState)
+		if !ok {
+			return fmt.Errorf("unexpected client state type")
+		}
+		ctx.Logger().Info("TM client state found.", "State", tmClientState.String())
+		if tmClientState.ChainId == "neutcons" {
+			store := prefix.NewStore(ctx.KVStore(im.keeper.StoreKey), []byte("allowed-channel/"))
+			store.Set([]byte(channelID), []byte{1})
+			ctx.Logger().Info("Successfully set channel-id", "ID", channelID)
+		}
+
+	}
+
 	return im.app.OnChanOpenConfirm(ctx, portID, channelID)
 }
 
