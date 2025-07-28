@@ -40,7 +40,9 @@ install: go.sum
 
 	# Build and place binary in $(GOPATH)/bin
 	go build -o $(BIN_PATH)/maany-provider -ldflags "$(providerFlags)" ./cmd/interchain-security-pd
-#		go install -ldflags "$(providerFlags)" ./cmd/interchain-security-pd
+#	go build -o $(GOPATH)/bin/maany-dex -ldflags "$(dex_consumerFlags)" ./cmd/dex-consumer-d
+
+#	go install -ldflags "$(providerFlags)" ./cmd/interchain-security-pd
 #		go install -ldflags "$(consumerFlags)" ./cmd/interchain-security-cd
 #		go install -ldflags "$(democracyFlags)" ./cmd/interchain-security-cdd
 #		go install -ldflags "$(standaloneFlags)" ./cmd/interchain-security-sd

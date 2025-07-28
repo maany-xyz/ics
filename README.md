@@ -1,59 +1,88 @@
 # Interchain Security
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/maany-xyz/ics)](https://goreportcard.com/report/github.com/maany-xyz/ics)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=cosmos_interchain-security&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=cosmos_interchain-security)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=cosmos_interchain-security&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=cosmos_interchain-security)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=cosmos_interchain-security&metric=bugs)](https://sonarcloud.io/summary/new_code?id=cosmos_interchain-security)
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=cosmos_interchain-security&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=cosmos_interchain-security)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=cosmos_interchain-security&metric=coverage)](https://sonarcloud.io/summary/new_code?id=cosmos_interchain-security)
+# Set-up
 
-**interchain-security** contains a working and in-production implementation of the Replicated Security protocol (aka Interchain Security V1). Replicated security is an open sourced IBC application which allows cosmos blockchains to lease their proof-of-stake security to one another.
+1.  clone repo
+2.  run `make install`
+    -> this creates the "maany-provider" cli
+3.  initialize genesis.json:
+    - `maany-provider init hub-node --chain-id maany-mainnet`
+      -> this creates a folder in your root called `.maany-ics-p`
+      -> the folder contains all the relevant config files to configure the chain before starting it
+4.  Initialize gentx file and validator account with self delegation
+    - Check if `init.gentx.sh` (in root of project) inputs and paths match your local setup
+    - run `./init-gentx.sh` from the root of the ics repo
+5.  In the genesis.json of the config folder add the module account under `app_state.auth.accounts`
 
-For more details on the **Replicated Security protocol**, take a look at the [docs](https://cosmos.github.io/interchain-security/) or [technical specification](https://github.com/cosmos/ibc/blob/main/spec/app/ics-028-cross-chain-validation/README.md).
+        {
+          "@type": "/cosmos.auth.v1beta1.ModuleAccount",
+          "base_account": {
+            "address": "maany1kdsm4jzhnrck2ucykhrj8lhhayp3am3sl9n4k3",
+            "pub_key": null,
+            "account_number": "1",
+            "sequence": "0"
+          },
+          "name": "blockrewards",
+          "permissions": ["minter"]
+        }
 
-For a list of **currently active releases**, see [RELEASES.md](./RELEASES.md#version-matrix).
+    under `app_state.bank.balances` add
 
-For a list of **major ICS features** available in the currently active releases, see [FEATURES.md](./FEATURES.md).
+        {
+          "address": "maany1kdsm4jzhnrck2ucykhrj8lhhayp3am3sl9n4k3",
+          "coins": [
+            {
+              "denom": "stake",
+              "amount": "300000000000000"
+            }
+          ]
+        },
 
-## Instructions
+6.  Create one or more test accounts (makes sense to create 2 accounts and test transactions once the chain is running)
 
-**Prerequisites**
+- `maany-provider keys add <account_name> --keyring-backend test`
+  -> this creates a test account and keyring is stored directly in the config folder
 
-```bash
-## For OSX or Linux
+6. Add an amount to a new account on chain start:
 
-# go 1.21 (https://formulae.brew.sh/formula/go)
-brew install go@1.21
-# jq (optional, for testnet) (https://formulae.brew.sh/formula/jq)
-brew install jq
-# docker (optional, for integration tests, testnet) (https://docs.docker.com/get-docker/)
+- `maany-provider genesis add-genesis-account <address> <amount, e.g. 100000stake> --keyring-backend test`
 
-```
+- Note: Double check in genesis.json, your account should've been added under `app_state.auth.accounts`
+  {
+  "@type": "/cosmos.auth.v1beta1.BaseAccount",
+  "address": <your_address>,
+  "pub_key": null,
+  "account_number": "0",
+  "sequence": "0"
+  },
+- then under `app_state.bank.balances` add funds to those accounts like by adding:
+  {
+  "address": <your_address>,
+  "coins": [
+  {
+  "denom": "stake",
+  "amount": <number e.g. 10000000000stake>
+  }
+  ]
+  },
 
-**Installing and running binaries**
+- IMPORTANT: the sum of all balances in `app_state.bank.balances` must the same as in `app_state.bank.supply.amount`
+  e.g. "supply": [
+  {
+  "denom": "stake",
+  "amount": "10000000000"
+  }
+  ],
 
-```bash
-# install interchain-security-pd and interchain-security-cd binaries
-make install
-# run provider
-interchain-security-pd
-# run consumer
-interchain-security-cd
-# (if the above fail, ensure ~/go/bin on $PATH)
-export PATH=$PATH:$(go env GOPATH)/bin
-```
+7. Run the chain `maany-provider start`
 
-Inspect the [Makefile](./Makefile) if curious.
+# Commands
 
-## Testing
+# Check Account balance
 
-See [testing docs](./TESTING.md).
+`maany-provider q bank balances <address>`
 
-## Learn more
+# Send transaction
 
-- [IBC Docs](https://ibc.cosmos.network/)
-- [IBC Protocol](https://ibcprotocol.org/)
-- [IBC Specs](https://github.com/cosmos/ibc)
-- [Cosmos SDK documentation](https://docs.cosmos.network)
-- [Cosmos SDK Tutorials](https://tutorials.cosmos.network)
-- [Discord](https://discord.gg/cosmosnetwork)
+`maany-provider tx bank send <from_key_or_address> [to_address] <amount>`
+e.g. maany-provider tx bank send maany123... maany234... 1000000stake
